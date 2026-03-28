@@ -4,8 +4,6 @@ import { Resend } from "resend";
 import { MATURITY_BANDS } from "@/lib/constants";
 import type { MaturityLevel } from "@/lib/types";
 
-const resend = new Resend(process.env.RESEND_API_KEY);
-
 function validateEmail(email: unknown): boolean {
   if (typeof email !== "string") return false;
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
@@ -25,6 +23,7 @@ function getMaturityLabel(level: MaturityLevel): string {
 
 export async function POST(request: Request) {
   try {
+    const resend = new Resend(process.env.RESEND_API_KEY);
     const body = await request.json();
     const { email, assessmentId } = body;
 
