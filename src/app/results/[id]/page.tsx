@@ -11,8 +11,8 @@ import {
 import type { DimensionKey, FirmSize, MaturityLevel } from "@/lib/types";
 import RadarChart from "@/components/results/RadarChart";
 import DimensionBars from "@/components/results/DimensionBars";
-import CopyLinkButton from "@/components/results/CopyLinkButton";
 import LeadCaptureModal from "@/components/results/LeadCaptureModal";
+import DownloadPdfButton from "@/components/results/DownloadPdfButton";
 
 interface AssessmentRow {
   id: string;
@@ -292,6 +292,15 @@ export default async function ResultsPage({
               assessmentId={id}
               firmSize={firmSize}
               maturityLevel={assessment.maturity_level}
+            />
+            <DownloadPdfButton
+              overallScore={assessment.overall_score}
+              maturityLevel={assessment.maturity_level}
+              firmSize={firmSize}
+              dimensionScores={assessment.scores.dimensions}
+              sortedDimensions={assessment.scores.sorted || []}
+              lowest={assessment.scores.lowest || []}
+              strongest={assessment.scores.strongest}
             />
           </div>
         </div>

@@ -23,19 +23,9 @@ const SHORT_NAMES: Record<DimensionKey, string[]> = {
   people_culture: ["People &", "Culture"],
 };
 
-function renderAxisTick({
-  payload,
-  x,
-  y,
-  cx,
-  cy,
-}: {
-  payload: { value: string };
-  x: number;
-  y: number;
-  cx: number;
-  cy: number;
-}) {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function renderAxisTick(props: any) {
+  const { payload, x, y, cx, cy } = props;
   const dx = x - cx;
   const dy = y - cy;
   const len = Math.sqrt(dx * dx + dy * dy) || 1;
@@ -43,7 +33,7 @@ function renderAxisTick({
   const newX = x + (dx / len) * nudge;
   const newY = y + (dy / len) * nudge;
 
-  let anchor: string = "middle";
+  let anchor: "start" | "middle" | "end" = "middle";
   if (dx > 15) anchor = "start";
   else if (dx < -15) anchor = "end";
 
