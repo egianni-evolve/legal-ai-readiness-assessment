@@ -1,0 +1,33 @@
+@import "tailwindcss";
+
+@theme {
+  /* Navy Family - Primary */
+  --color-navy-deep: #111D33;
+  --color-navy: #1A2744;
+  --color-navy-brand: #1B2C4E;
+  --color-navy-mid: #243352;
+
+  /* Gold Family - Secondary */
+  --color-gold-primary: #C9A84C;
+  --color-gold-web: #C9953E;
+  --color-gold-light: #D4A853;
+  --color-gold-pale: #E8CC8A;
+
+  /* Red Family - Accent (sparingly) */
+  --color-mission-red: #BE3228;
+  --color-red-bright: #D64035;
+  --color-red-deep: #8C251D;
+
+  /* Teal Family - Digital Accent */
+  --color-teal-primary: #00A3A1;
+  --color-teal-light: #00C9C6;
+
+  /* Neutrals */
+  --color-body-text: #C5CDD8;
+  --color-muted: #8A95A8;
+  --color-email-body: #555555;
+
+  /* Font families */
+  --font-headline: Georgia, "Times New Roman", serif;
+  --font-body: Arial, Helvetica, sans-serif;
+}
