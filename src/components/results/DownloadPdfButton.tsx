@@ -72,8 +72,9 @@ export default function DownloadPdfButton({
       doc.text("LawLab AI", margin, 20);
 
       // TM
-      doc.setFontSize(8);
-      doc.text("TM", margin + doc.getTextWidth("LawLab AI") + 1, 15);
+      const logoWidth = doc.getTextWidth("LawLab AI");
+      doc.setFontSize(7);
+      doc.text("\u2122", margin + logoWidth + 0.5, 16);
 
       // Title
       doc.setFont("helvetica", "normal");
