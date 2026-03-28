@@ -110,7 +110,7 @@ export default function Home() {
             LawLab AI<sup className="text-xs">™</sup>
           </span>
           <p className="text-muted text-xs">
-            &copy; {new Date().getFullYear()} LawLab AI, LLC. All rights
+            &copy; 2026 LawLab AI, LLC. All rights
             reserved.
           </p>
         </div>

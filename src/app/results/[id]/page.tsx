@@ -1,5 +1,6 @@
 import { createServerClient } from "@supabase/ssr";
 import { notFound } from "next/navigation";
+import type { Metadata } from "next";
 import { DIMENSIONS, MATURITY_BANDS } from "@/lib/constants";
 import {
   OVERALL_INTERPRETATIONS,
@@ -11,6 +12,7 @@ import type { DimensionKey, FirmSize, MaturityLevel } from "@/lib/types";
 import RadarChart from "@/components/results/RadarChart";
 import DimensionBars from "@/components/results/DimensionBars";
 import CopyLinkButton from "@/components/results/CopyLinkButton";
+import LeadCaptureModal from "@/components/results/LeadCaptureModal";
 
 interface AssessmentRow {
   id: string;
@@ -45,6 +47,35 @@ interface AssessmentRow {
 function getMaturityLabel(level: MaturityLevel): string {
   const band = MATURITY_BANDS.find((b) => b.level === level);
   return band?.label ?? "Unknown";
+}
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ id: string }>;
+}): Promise<Metadata> {
+  const { id } = await params;
+  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://lawlab.ai";
+
+  return {
+    title: "Your AI Readiness Results | LawLab AI",
+    description:
+      "See how your legal team scores across data readiness, process maturity, technology, governance, and culture.",
+    openGraph: {
+      title: "My Legal AI Readiness Results",
+      description:
+        "I just assessed my legal team's AI readiness. See how we scored across 5 dimensions.",
+      images: [`${baseUrl}/api/share-card?id=${id}`],
+      type: "website",
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: "My Legal AI Readiness Results",
+      description:
+        "I just assessed my legal team's AI readiness. See how we scored across 5 dimensions.",
+      images: [`${baseUrl}/api/share-card?id=${id}`],
+    },
+  };
 }
 
 export default async function ResultsPage({
@@ -134,10 +165,10 @@ export default async function ResultsPage({
         </h2>
 
         <div className="grid lg:grid-cols-2 gap-8">
-          <div className="bg-navy rounded-xl p-6 border border-navy-mid">
+          <div className="bg-navy rounded-xl p-6 border border-navy-mid flex items-center justify-center">
             <RadarChart dimensionScores={assessment.scores.dimensions} />
           </div>
-          <div className="bg-navy rounded-xl p-6 border border-navy-mid">
+          <div className="bg-navy rounded-xl p-6 border border-navy-mid flex items-center justify-center">
             <DimensionBars dimensionScores={assessment.scores.dimensions} />
           </div>
         </div>
@@ -244,26 +275,44 @@ export default async function ResultsPage({
         </div>
       </section>
 
+      {/* Share Card Preview */}
+      <section className="px-6 py-8 max-w-3xl mx-auto w-full">
+        <h2 className="font-headline text-2xl font-bold text-white mb-6 text-center">
+          Share Your Results
+        </h2>
+        <div className="bg-navy rounded-xl p-4 border border-navy-mid space-y-4">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src={`/api/share-card?id=${id}`}
+            alt="AI Readiness Results Share Card"
+            className="w-full rounded-lg"
+          />
+          <div className="flex flex-col sm:flex-row gap-3 pt-2 justify-center items-center">
+            <LeadCaptureModal
+              assessmentId={id}
+              firmSize={firmSize}
+              maturityLevel={assessment.maturity_level}
+            />
+          </div>
+        </div>
+      </section>
+
       {/* CTA */}
       <section className="px-6 py-12 max-w-3xl mx-auto w-full text-center">
         <h2 className="font-headline text-2xl font-bold text-white mb-4">
           Ready to Take the Next Step?
         </h2>
         <p className="text-body-text mb-8 max-w-xl mx-auto">
-          Share your results with your team or book a consultation to discuss
-          your AI readiness roadmap.
+          Book a consultation to discuss your AI readiness roadmap.
         </p>
-        <div className="flex flex-col sm:flex-row gap-4 justify-center">
-          <CopyLinkButton />
-          <a
-            href="https://lawlab.ai/"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="inline-block bg-gold-web hover:bg-gold-light text-navy-deep font-body font-bold px-8 py-3 rounded transition-colors"
-          >
-            Book a Consultation
-          </a>
-        </div>
+        <a
+          href="https://lawlab.ai/"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="inline-block bg-gold-web hover:bg-gold-light text-navy-deep font-body font-bold px-8 py-3 rounded transition-colors"
+        >
+          Book a Consultation
+        </a>
       </section>
 
       {/* Footer */}
@@ -273,7 +322,7 @@ export default async function ResultsPage({
             LawLab AI<sup className="text-xs">™</sup>
           </span>
           <p className="text-muted text-xs">
-            &copy; {new Date().getFullYear()} LawLab AI, LLC. All rights
+            &copy; 2026 LawLab AI, LLC. All rights
             reserved.
           </p>
         </div>
