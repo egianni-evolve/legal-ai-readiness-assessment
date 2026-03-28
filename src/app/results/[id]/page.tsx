@@ -1,11 +1,20 @@
 import { createServerClient } from "@supabase/ssr";
 import { notFound } from "next/navigation";
 import { DIMENSIONS, MATURITY_BANDS } from "@/lib/constants";
-import type { DimensionKey, MaturityLevel } from "@/lib/types";
+import {
+  OVERALL_INTERPRETATIONS,
+  DIMENSION_INTERPRETATIONS,
+  FIRM_SIZE_MODIFIERS,
+  RECOMMENDATIONS,
+} from "@/lib/interpretations";
+import type { DimensionKey, FirmSize, MaturityLevel } from "@/lib/types";
+import RadarChart from "@/components/results/RadarChart";
+import DimensionBars from "@/components/results/DimensionBars";
+import CopyLinkButton from "@/components/results/CopyLinkButton";
 
 interface AssessmentRow {
   id: string;
-  firm_size: string;
+  firm_size: FirmSize;
   scores: {
     dimensions: Record<DimensionKey, number>;
     sorted: Array<{
@@ -15,8 +24,18 @@ interface AssessmentRow {
       level: MaturityLevel;
       label: string;
     }>;
-    lowest: Array<{ key: DimensionKey; name: string; score: number; label: string }>;
-    strongest: { key: DimensionKey; name: string; score: number; label: string };
+    lowest: Array<{
+      key: DimensionKey;
+      name: string;
+      score: number;
+      label: string;
+    }>;
+    strongest: {
+      key: DimensionKey;
+      name: string;
+      score: number;
+      label: string;
+    };
   };
   overall_score: number;
   maturity_level: MaturityLevel;
@@ -26,10 +45,6 @@ interface AssessmentRow {
 function getMaturityLabel(level: MaturityLevel): string {
   const band = MATURITY_BANDS.find((b) => b.level === level);
   return band?.label ?? "Unknown";
-}
-
-function getScoreBarWidth(score: number): string {
-  return `${((score - 1) / 4) * 100}%`;
 }
 
 export default async function ResultsPage({
@@ -71,6 +86,18 @@ export default async function ResultsPage({
 
   const assessment = data as AssessmentRow;
   const maturityLabel = getMaturityLabel(assessment.maturity_level);
+  const firmSize = assessment.firm_size;
+
+  // Get top 3 recommendations from the 2 lowest dimensions
+  const lowest = assessment.scores.lowest || [];
+  const recs: Array<{ dimension: string; text: string }> = [];
+  for (const dim of lowest.slice(0, 2)) {
+    const dimRecs = RECOMMENDATIONS[dim.key]?.[firmSize] || [];
+    for (const rec of dimRecs.slice(0, 2)) {
+      recs.push({ dimension: dim.name, text: rec });
+    }
+  }
+  const topRecs = recs.slice(0, 3);
 
   return (
     <main className="min-h-screen flex flex-col">
@@ -94,42 +121,97 @@ export default async function ResultsPage({
           <p className="mt-3 text-2xl text-gold-web font-body font-bold">
             {assessment.overall_score} / 5.0
           </p>
+          <p className="mt-6 text-body-text text-base leading-relaxed max-w-2xl mx-auto">
+            {OVERALL_INTERPRETATIONS[assessment.maturity_level]}
+          </p>
         </div>
       </section>
 
-      {/* Dimension Breakdown */}
-      <section className="px-6 py-8 max-w-3xl mx-auto w-full">
-        <h2 className="font-headline text-2xl font-bold text-white mb-8">
+      {/* Charts */}
+      <section className="px-6 py-8 max-w-4xl mx-auto w-full">
+        <h2 className="font-headline text-2xl font-bold text-white mb-8 text-center">
           Your Dimension Breakdown
         </h2>
 
+        <div className="grid lg:grid-cols-2 gap-8">
+          <div className="bg-navy rounded-xl p-6 border border-navy-mid">
+            <RadarChart dimensionScores={assessment.scores.dimensions} />
+          </div>
+          <div className="bg-navy rounded-xl p-6 border border-navy-mid">
+            <DimensionBars dimensionScores={assessment.scores.dimensions} />
+          </div>
+        </div>
+      </section>
+
+      {/* Per-Dimension Interpretations */}
+      <section className="px-6 py-8 max-w-3xl mx-auto w-full">
+        <h2 className="font-headline text-2xl font-bold text-white mb-8">
+          What This Means
+        </h2>
+
         <div className="space-y-6">
-          {DIMENSIONS.map((dim) => {
-            const score = assessment.scores.dimensions[dim.key];
-            const sorted = assessment.scores.sorted?.find(
-              (s) => s.key === dim.key
-            );
-            const label = sorted?.label ?? "";
+          {(assessment.scores.sorted || []).map((dim) => {
+            const interpretation =
+              DIMENSION_INTERPRETATIONS[dim.key]?.[dim.level as MaturityLevel] || "";
+            const modifier =
+              FIRM_SIZE_MODIFIERS[dim.key]?.[firmSize] || "";
 
             return (
-              <div key={dim.key}>
-                <div className="flex items-center justify-between mb-2">
-                  <span className="font-body text-sm text-white">
+              <div
+                key={dim.key}
+                className="bg-navy rounded-lg p-6 border border-navy-mid"
+              >
+                <div className="flex items-center justify-between mb-3">
+                  <h3 className="font-body text-lg font-semibold text-white">
                     {dim.name}
-                  </span>
-                  <span className="font-body text-sm text-gold-web font-semibold">
-                    {score} &middot; {label}
+                  </h3>
+                  <span className="text-gold-web font-body text-sm font-semibold">
+                    {dim.score} &middot; {dim.label}
                   </span>
                 </div>
-                <div className="w-full h-3 bg-navy-mid rounded-full overflow-hidden">
-                  <div
-                    className="h-full bg-gold-web rounded-full transition-all duration-700"
-                    style={{ width: getScoreBarWidth(score) }}
-                  />
-                </div>
+                <p className="text-body-text text-sm leading-relaxed">
+                  {interpretation}
+                </p>
+                {modifier && (
+                  <p className="text-body-text text-sm leading-relaxed mt-3 italic">
+                    {modifier}
+                  </p>
+                )}
               </div>
             );
           })}
+        </div>
+      </section>
+
+      {/* Recommendations */}
+      <section className="px-6 py-8 max-w-3xl mx-auto w-full">
+        <h2 className="font-headline text-2xl font-bold text-white mb-4">
+          Your Top Recommendations
+        </h2>
+        <p className="text-body-text text-sm mb-8">
+          Based on your lowest-scoring dimensions and your practice size, here
+          is where to focus first.
+        </p>
+
+        <div className="space-y-4">
+          {topRecs.map((rec, index) => (
+            <div
+              key={index}
+              className="bg-navy rounded-lg p-6 border border-navy-mid flex gap-4"
+            >
+              <span className="text-gold-web font-headline text-2xl font-bold shrink-0">
+                {index + 1}
+              </span>
+              <div>
+                <p className="text-gold-primary font-body text-xs font-bold uppercase tracking-widest mb-1">
+                  {rec.dimension}
+                </p>
+                <p className="text-white font-body text-sm leading-relaxed">
+                  {rec.text}
+                </p>
+              </div>
+            </div>
+          ))}
         </div>
       </section>
 
@@ -153,27 +235,35 @@ export default async function ResultsPage({
               Focus Area
             </p>
             <p className="font-body text-lg font-semibold text-white">
-              {assessment.scores.lowest?.[0]?.name}
+              {lowest[0]?.name}
             </p>
             <p className="text-muted text-sm mt-1">
-              Score: {assessment.scores.lowest?.[0]?.score}
+              Score: {lowest[0]?.score}
             </p>
           </div>
         </div>
       </section>
 
-      {/* CTA Placeholder */}
+      {/* CTA */}
       <section className="px-6 py-12 max-w-3xl mx-auto w-full text-center">
-        <p className="text-body-text mb-6">
-          Charts, detailed interpretations, recommendations, and sharing
-          features are coming in the next phases.
+        <h2 className="font-headline text-2xl font-bold text-white mb-4">
+          Ready to Take the Next Step?
+        </h2>
+        <p className="text-body-text mb-8 max-w-xl mx-auto">
+          Share your results with your team or book a consultation to discuss
+          your AI readiness roadmap.
         </p>
-        <a
-          href="/"
-          className="inline-block bg-gold-web hover:bg-gold-light text-navy-deep font-body font-bold px-8 py-3 rounded transition-colors"
-        >
-          Back to Home
-        </a>
+        <div className="flex flex-col sm:flex-row gap-4 justify-center">
+          <CopyLinkButton />
+          <a
+            href="https://lawlab.ai/"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-block bg-gold-web hover:bg-gold-light text-navy-deep font-body font-bold px-8 py-3 rounded transition-colors"
+          >
+            Book a Consultation
+          </a>
+        </div>
       </section>
 
       {/* Footer */}
