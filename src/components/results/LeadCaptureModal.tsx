@@ -65,30 +65,35 @@ export default function LeadCaptureModal({
   }
 
   return (
-    <form
-      onSubmit={handleSubmit}
-      className="w-full flex flex-col sm:flex-row gap-3"
-    >
-      <input
-        type="email"
-        value={email}
-        onChange={(e) => setEmail(e.target.value)}
-        placeholder="you@yourfirm.com"
-        required
-        className="flex-1 bg-navy-deep border border-navy-mid focus:border-gold-web text-white font-body text-sm px-4 py-3 rounded outline-none transition-colors placeholder:text-muted"
-      />
-      <button
-        type="submit"
-        disabled={status === "sending"}
-        className="bg-gold-web hover:bg-gold-light text-navy-deep font-body font-bold px-6 py-3 rounded transition-colors cursor-pointer disabled:opacity-50"
+    <div className="w-full space-y-2">
+      <form
+        onSubmit={handleSubmit}
+        className="flex flex-col sm:flex-row gap-3"
       >
-        {status === "sending" ? "Sending..." : "Send"}
-      </button>
-      {status === "error" && (
-        <p className="text-mission-red text-sm self-center">
-          Failed. Try again.
+        <input
+          type="email"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          placeholder="you@yourfirm.com"
+          required
+          className="flex-1 bg-navy-deep border border-navy-mid focus:border-gold-web text-white font-body text-sm px-4 py-3 rounded outline-none transition-colors placeholder:text-muted"
+        />
+        <button
+          type="submit"
+          disabled={status === "sending"}
+          className="bg-gold-web hover:bg-gold-light text-navy-deep font-body font-bold px-6 py-3 rounded transition-colors cursor-pointer disabled:opacity-50"
+        >
+          {status === "sending" ? "Sending..." : "Send"}
+        </button>
+        {status === "error" && (
+          <p className="text-mission-red text-sm self-center">
+            Failed. Try again.
         </p>
       )}
-    </form>
+      </form>
+      <p className="text-muted text-xs text-center sm:text-left">
+        Your email is used only to send your results. No spam.
+      </p>
+    </div>
   );
 }
