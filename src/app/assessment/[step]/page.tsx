@@ -3,6 +3,7 @@
 import { useParams, useSearchParams, useRouter } from "next/navigation";
 import { useEffect, useState, useCallback } from "react";
 import { DIMENSIONS, QUESTIONS } from "@/lib/constants";
+import type { Answers as AnswersType } from "@/lib/types";
 import type { FirmSize, Answers } from "@/lib/types";
 import StepDots from "@/components/assessment/StepDots";
 import ProgressBar from "@/components/assessment/ProgressBar";
@@ -62,15 +63,38 @@ export default function AssessmentStep() {
     (q) => q.dimension === dimension.key
   );
 
+  const [submitting, setSubmitting] = useState(false);
+
   const allAnswered = sectionQuestions.every((q) => answers[q.id] !== undefined);
   const isLast = step === 5;
 
-  function handleNext() {
+  async function handleNext() {
     if (!allAnswered) return;
 
     if (isLast) {
-      // Phase 3 will handle submission. For now, go to a placeholder.
-      router.push(`/assessment/complete?firm=${firmSize}`);
+      setSubmitting(true);
+      try {
+        const allAnswers = getStoredAnswers();
+        const res = await fetch("/api/submit-assessment", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            answers: allAnswers,
+            firmSize,
+          }),
+        });
+
+        if (!res.ok) {
+          setSubmitting(false);
+          return;
+        }
+
+        const data = await res.json();
+        sessionStorage.removeItem(STORAGE_KEY);
+        router.push(`/results/${data.id}?firm=${firmSize}`);
+      } catch {
+        setSubmitting(false);
+      }
     } else {
       router.push(`/assessment/${step + 1}?firm=${firmSize}`);
     }
@@ -128,9 +152,10 @@ export default function AssessmentStep() {
           )}
           <div className={step === 1 ? "ml-auto" : ""}>
             <NextButton
-              enabled={allAnswered}
+              enabled={allAnswered && !submitting}
               isLast={isLast}
               onClick={handleNext}
+              loading={submitting}
             />
           </div>
         </div>

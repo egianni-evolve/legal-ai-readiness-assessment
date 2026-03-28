@@ -2,12 +2,14 @@ interface NextButtonProps {
   enabled: boolean;
   isLast: boolean;
   onClick: () => void;
+  loading?: boolean;
 }
 
 export default function NextButton({
   enabled,
   isLast,
   onClick,
+  loading,
 }: NextButtonProps) {
   return (
     <button
@@ -19,7 +21,7 @@ export default function NextButton({
           : "bg-navy-mid text-muted cursor-not-allowed"
       }`}
     >
-      {isLast ? "See Your Results" : "Next Section"}
+      {loading ? "Calculating..." : isLast ? "See Your Results" : "Next Section"}
     </button>
   );
 }
