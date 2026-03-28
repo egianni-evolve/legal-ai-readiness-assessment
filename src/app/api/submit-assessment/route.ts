@@ -82,7 +82,7 @@ export async function POST(request: Request) {
 
     if (error) {
       return NextResponse.json(
-        { error: "Failed to save assessment." },
+        { error: "Failed to save assessment.", details: error.message },
         { status: 500 }
       );
     }
@@ -91,10 +91,10 @@ export async function POST(request: Request) {
       id: data.id,
       ...results,
     });
-  } catch {
+  } catch (e) {
     return NextResponse.json(
-      { error: "Invalid request." },
-      { status: 400 }
+      { error: "Invalid request.", details: e instanceof Error ? e.message : String(e) },
+      { status: 500 }
     );
   }
 }

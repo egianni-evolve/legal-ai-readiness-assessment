@@ -85,6 +85,9 @@ export default function AssessmentStep() {
         });
 
         if (!res.ok) {
+          const errData = await res.json().catch(() => ({}));
+          console.error("Submit failed:", errData);
+          alert(`Error: ${errData.details || errData.error || "Unknown error"}`);
           setSubmitting(false);
           return;
         }
