@@ -1,3 +1,7 @@
+## 2026-10-21 - Node.js security release
+
+Pin CI to the patched October 21 Node.js release so setup-node cannot select an older cached runtime.
+
 # CHANGELOG — Legal AI Readiness Assessment
 
 ## 2026-08-01 — SHIPPED
