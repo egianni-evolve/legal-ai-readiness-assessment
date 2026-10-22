@@ -1,3 +1,7 @@
+## 2026-10-21 - Dependency security remediation
+
+Upgrade Next.js to 16.4.2 and Resend to 6.34.1, and refresh vulnerable transitive packages. Replace the unused Next lint preset, which depends on unpatched braces, with ESLint and TypeScript recommended rules. Replace the removed next lint command with eslint and run it in security CI. Existing unused-variable findings remain warnings.
+
 ## 2026-10-21 - Node.js security release
 
 Pin CI to the patched October 21 Node.js release so setup-node cannot select an older cached runtime.

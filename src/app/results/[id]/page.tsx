@@ -281,7 +281,6 @@ export default async function ResultsPage({
           Share Your Results
         </h2>
         <div className="bg-navy rounded-xl p-4 border border-navy-mid space-y-4">
-          {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
             src={`/api/share-card?id=${id}`}
             alt="AI Readiness Results Share Card"
